@@ -4,8 +4,6 @@
 
 The Bareflank C Library is a simple library that contains empty symbols that are needed when using newlib. Most operating systems will need to implement all of these functions, but some will only need a couple, if any. The goal of this library is to provide the bare minimum support to get newlib up and running. 
 
-## Compilation Instructions
-
 ## Contributing
 
 If you would like to participate in the development of this project, the following Wiki page provides more information on how to do so:
