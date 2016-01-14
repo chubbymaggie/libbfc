@@ -1,12 +1,24 @@
 #include <stddef.h>
 
 #include <errno.h>
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/times.h>
 #include <regex.h>
+
+#define UNHANDLED() \
+    { \
+        const char *str_text = "unsupported libc function called: "; \
+        const char *str_func = __PRETTY_FUNCTION__; \
+        const char *str_endl = "\n"; \
+        write(0, str_text, strlen(str_text)); \
+        write(0, str_func, strlen(str_func)); \
+        write(0, str_endl, strlen(str_endl)); \
+    }
 
 // Supported Symbols
 //
@@ -64,6 +76,8 @@ times(struct tms *buf)
 {
     (void) buf;
 
+    UNHANDLED();
+
     return 0;
 }
 #endif
@@ -76,6 +90,8 @@ execve(const char *path, char *const argv[], char *const envp[])
     (void) argv;
     (void) envp;
 
+    UNHANDLED();
+
     errno = -ENOSYS;
     return -1;
 }
@@ -85,6 +101,8 @@ execve(const char *path, char *const argv[], char *const envp[])
 pid_t
 getpid(void)
 {
+    UNHANDLED();
+
     return 0;
 }
 #endif
@@ -94,6 +112,8 @@ int
 isatty(int fd)
 {
     (void) fd;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return -1;
@@ -107,6 +127,8 @@ lseek(int fd, off_t offset, int whence)
     (void) fd;
     (void) offset;
     (void) whence;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return -1;
@@ -126,6 +148,8 @@ write(int file, const void *buffer, size_t count)
     (void) file;
     (void) buffer;
 
+    UNHANDLED();
+
     errno = -ENOSYS;
     return -1;
 }
@@ -137,6 +161,8 @@ fstat(int file, struct stat *sbuf)
 {
     (void) file;
     (void) sbuf;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return -1;
@@ -150,6 +176,8 @@ kill(pid_t _pid, int _sig)
     (void) _pid;
     (void) _sig;
 
+    UNHANDLED();
+
     errno = -ENOSYS;
     return -1;
 }
@@ -160,6 +188,8 @@ pid_t
 wait(int *status)
 {
     (void) status;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return -1;
@@ -174,6 +204,8 @@ read(int fd, void *buffer, size_t length)
     (void) buffer;
     (void) length;
 
+    UNHANDLED();
+
     errno = -ENOSYS;
     return -1;
 }
@@ -185,6 +217,8 @@ unlink(const char *file)
 {
     (void) file;
 
+    UNHANDLED();
+
     errno = -ENOSYS;
     return -1;
 }
@@ -194,6 +228,8 @@ unlink(const char *file)
 pid_t
 fork(void)
 {
+    UNHANDLED();
+
     errno = -ENOSYS;
     return -1;
 }
@@ -204,6 +240,8 @@ void *
 sbrk(ptrdiff_t __incr)
 {
     (void) __incr;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return (void *)-1;
@@ -218,6 +256,8 @@ regcomp(regex_t *preg, const char *regex, int cflags)
     (void) regex;
     (void) cflags;
 
+    UNHANDLED();
+
     return REG_NOMATCH;
 }
 #endif
@@ -228,6 +268,8 @@ gettimeofday(struct timeval *tp, void *tzp)
 {
     (void) tp;
     (void) tzp;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return -1;
@@ -240,6 +282,8 @@ clock_gettime(clockid_t clk_id, struct timespec *tp) __THROW
 {
     (void) clk_id;
     (void) tp;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return -1;
@@ -256,6 +300,8 @@ regexec(const regex_t *preg, const char *string,
     (void) nmatch;
     (void) pmatch;
     (void) eflags;
+
+    UNHANDLED();
 
     return REG_NOMATCH;
 }
@@ -274,6 +320,8 @@ stat(const char *pathname, struct stat *buf)
     (void) pathname;
     (void) buf;
 
+    UNHANDLED();
+
     errno = -ENOSYS;
     return -1;
 }
@@ -286,6 +334,8 @@ link(const char *oldpath, const char *newpath)
     (void) oldpath;
     (void) newpath;
 
+    UNHANDLED();
+
     errno = -ENOSYS;
     return -1;
 }
@@ -296,6 +346,8 @@ void
 _exit(int status)
 {
     (void) status;
+
+    UNHANDLED();
 
     while(1);
 }
@@ -308,6 +360,8 @@ open(const char *file, int mode, ...)
     (void) file;
     (void) mode;
 
+    UNHANDLED();
+
     errno = -ENOSYS;
     return -1;
 }
@@ -317,6 +371,8 @@ open(const char *file, int mode, ...)
 void
 regfree(regex_t *preg)
 {
+    UNHANDLED();
+
     (void) preg;
 }
 #endif
@@ -327,6 +383,8 @@ fcntl(int fd, int cmd, ...)
 {
     (void) fd;
     (void) cmd;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return -1;
@@ -339,6 +397,8 @@ mkdir(const char *path, mode_t mode)
 {
     (void) path;
     (void) mode;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return -1;
@@ -353,6 +413,8 @@ posix_memalign(void **memptr, size_t alignment, size_t size)
     (void) alignment;
     (void) size;
 
+    UNHANDLED();
+
     return NULL;
 }
 #endif
@@ -362,6 +424,8 @@ int
 close(int fd)
 {
     (void) fd;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return -1;
@@ -375,6 +439,8 @@ sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
     (void) how;
     (void) set;
     (void) oldset;
+
+    UNHANDLED();
 
     errno = -ENOSYS;
     return -1;
@@ -394,6 +460,8 @@ _malloc_r(size_t size)
 {
     (void) size;
 
+    UNHANDLED();
+
     return NULL;
 }
 #endif
@@ -403,6 +471,8 @@ void
 _free_r(void *ptr)
 {
     (void) ptr;
+
+    UNHANDLED();
 }
 #endif
 
@@ -412,6 +482,8 @@ _calloc_r(size_t nmemb, size_t size)
 {
     (void) nmemb;
     (void) size;
+
+    UNHANDLED();
 
     return NULL;
 }
@@ -423,6 +495,8 @@ _realloc_r(void *ptr, size_t size)
 {
     (void) ptr;
     (void) size;
+
+    UNHANDLED();
 
     return NULL;
 }
