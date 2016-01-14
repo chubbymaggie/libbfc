@@ -1,12 +1,12 @@
 #include <stddef.h>
 
-#include <regex.h>
 #include <errno.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/times.h>
+#include <regex.h>
 
 // Supported Symbols
 //
