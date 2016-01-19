@@ -183,7 +183,7 @@ kill(pid_t _pid, int _sig)
 }
 #endif
 
-#ifndef SYM_PROVIDED__KILL
+#ifndef SYM_PROVIDED__WAIT
 pid_t
 wait(int *status)
 {
@@ -405,7 +405,7 @@ mkdir(const char *path, mode_t mode)
 }
 #endif
 
-#ifndef SYM_PROVIDED__MKDIR
+#ifndef SYM_PROVIDED__MEMALIGN
 int
 posix_memalign(void **memptr, size_t alignment, size_t size)
 {
