@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -449,15 +450,11 @@ sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
 
 #ifdef MALLOC_PROVIDED
 
-void *_malloc_r(size_t size);
-void _free_r(void *ptr);
-void *_calloc_r(size_t nmemb, size_t size);
-void *_realloc_r(void *ptr, size_t size);
-
 #ifndef SYM_PROVIDED__MALLOC
 void *
-_malloc_r(size_t size)
+_malloc_r(struct _reent *reent, size_t size)
 {
+    (void) reent;
     (void) size;
 
     UNHANDLED();
@@ -468,8 +465,9 @@ _malloc_r(size_t size)
 
 #ifndef SYM_PROVIDED__FREE
 void
-_free_r(void *ptr)
+_free_r(struct _reent *reent, void *ptr)
 {
+    (void) reent;
     (void) ptr;
 
     UNHANDLED();
@@ -478,8 +476,9 @@ _free_r(void *ptr)
 
 #ifndef SYM_PROVIDED__CALLOC
 void *
-_calloc_r(size_t nmemb, size_t size)
+_calloc_r(struct _reent *reent, size_t nmemb, size_t size)
 {
+    (void) reent;
     (void) nmemb;
     (void) size;
 
@@ -491,8 +490,9 @@ _calloc_r(size_t nmemb, size_t size)
 
 #ifndef SYM_PROVIDED__REALLOC
 void *
-_realloc_r(void *ptr, size_t size)
+_realloc_r(struct _reent *reent, void *ptr, size_t size)
 {
+    (void) reent;
     (void) ptr;
     (void) size;
 
@@ -505,25 +505,25 @@ _realloc_r(void *ptr, size_t size)
 void *
 malloc(size_t size)
 {
-    return _malloc_r(size);
+    return _malloc_r(0, size);
 }
 
 void
 free(void *ptr)
 {
-    _free_r(ptr);
+    _free_r(0, ptr);
 }
 
 void *
 calloc(size_t nmemb, size_t size)
 {
-    return _calloc_r(nmemb, size);
+    return _calloc_r(0, nmemb, size);
 }
 
 void *
 realloc(void *ptr, size_t size)
 {
-    return _realloc_r(ptr, size);
+    return _realloc_r(0, ptr, size);
 }
 
 #endif
