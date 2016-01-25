@@ -13,7 +13,7 @@
 
 #define UNHANDLED() \
     { \
-        const char *str_text = "unsupported libc function called: "; \
+        const char *str_text = "\033[1;33mWARNING\033[0m: unsupported libc function called = "; \
         const char *str_func = __PRETTY_FUNCTION__; \
         const char *str_endl = "\n"; \
         write(0, str_text, strlen(str_text)); \
