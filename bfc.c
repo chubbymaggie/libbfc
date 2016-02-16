@@ -148,6 +148,7 @@ write(int file, const void *buffer, size_t count)
 {
     (void) file;
     (void) buffer;
+    (void) count;
 
     UNHANDLED();
 
