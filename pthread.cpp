@@ -24,8 +24,9 @@
 #include <errno.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdint.h>
 
-#define MAX_THREAD_SPECIFIC_DATA 64
+#define MAX_THREAD_SPECIFIC_DATA 512
 
 #define UNHANDLED() \
     { \
@@ -47,7 +48,9 @@
         write(0, str_endl, strlen(str_endl)); \
     }
 
+#ifndef USE_FS_FOR_THREAD_LOCAL_STORAGE
 void* threadSpecificData[MAX_THREAD_SPECIFIC_DATA] = {0};
+#endif
 
 extern "C" int
 pthread_attr_destroy(pthread_attr_t *)
@@ -308,8 +311,19 @@ pthread_getschedparam(pthread_t, int *, struct sched_param *)
 extern "C" void *
 pthread_getspecific(pthread_key_t key)
 {
+#ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
+    uintptr_t lo;
+    uintptr_t hi;
+    void **threadSpecificData;
+#endif
+
     if (key > MAX_THREAD_SPECIFIC_DATA)
         return nullptr;
+
+#ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
+    asm volatile("rdmsr":"=a"(lo),"=d"(hi):"c"(0xC0000100));
+    threadSpecificData = (void **)((hi << 32) | lo);
+#endif
 
     return threadSpecificData[key];
 }
@@ -606,8 +620,19 @@ pthread_setschedparam(pthread_t, int, const struct sched_param *)
 extern "C" int
 pthread_setspecific(pthread_key_t key, const void *data)
 {
+#ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
+    uintptr_t lo;
+    uintptr_t hi;
+    void **threadSpecificData;
+#endif
+
     if (key > MAX_THREAD_SPECIFIC_DATA)
         return -EINVAL;
+
+#ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
+    asm volatile("rdmsr":"=a"(lo),"=d"(hi):"c"(0xC0000100));
+    threadSpecificData = (void **)((hi << 32) | lo);
+#endif
 
     threadSpecificData[key] = (void *)data;
     return 0;
