@@ -28,6 +28,8 @@
 
 #define MAX_THREAD_SPECIFIC_DATA 512
 
+extern "C" uint64_t __read_msr(uint32_t msr) noexcept;
+
 #define UNHANDLED() \
     { \
         const char *str_text = "\033[1;33mWARNING\033[0m: unsupported pthread function called = "; \
@@ -311,18 +313,11 @@ pthread_getschedparam(pthread_t, int *, struct sched_param *)
 extern "C" void *
 pthread_getspecific(pthread_key_t key)
 {
-#ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
-    uintptr_t lo;
-    uintptr_t hi;
-    void **threadSpecificData;
-#endif
-
     if (key > MAX_THREAD_SPECIFIC_DATA)
         return nullptr;
 
 #ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
-    asm volatile("rdmsr":"=a"(lo),"=d"(hi):"c"(0xC0000100));
-    threadSpecificData = (void **)((hi << 32) | lo);
+    auto threadSpecificData = (void **)__read_msr(0xC0000100);
 #endif
 
     return threadSpecificData[key];
@@ -620,18 +615,11 @@ pthread_setschedparam(pthread_t, int, const struct sched_param *)
 extern "C" int
 pthread_setspecific(pthread_key_t key, const void *data)
 {
-#ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
-    uintptr_t lo;
-    uintptr_t hi;
-    void **threadSpecificData;
-#endif
-
     if (key > MAX_THREAD_SPECIFIC_DATA)
         return -EINVAL;
 
 #ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
-    asm volatile("rdmsr":"=a"(lo),"=d"(hi):"c"(0xC0000100));
-    threadSpecificData = (void **)((hi << 32) | lo);
+    auto threadSpecificData = (void **)__read_msr(0xC0000100);
 #endif
 
     threadSpecificData[key] = (void *)data;
