@@ -26,7 +26,10 @@
 #include <string.h>
 #include <stdint.h>
 
-#define MAX_THREAD_SPECIFIC_DATA 512
+// We allocate a page for FS BASE which is used for TLS. We need to 
+// store the FS BASE as the first element, so this means that the 
+// max number of elements that can be used for TLS is 511. 
+#define MAX_THREAD_SPECIFIC_DATA 511
 
 extern "C" uint64_t __tls_base(void) noexcept;
 
