@@ -28,8 +28,7 @@
 
 #define MAX_THREAD_SPECIFIC_DATA 512
 
-extern "C" uint64_t __fs_base(void) noexcept;
-extern "C" uint64_t __read_msr(uint32_t msr) noexcept;
+extern "C" uint64_t __tls_base(void) noexcept;
 
 #define UNHANDLED() \
     { \
@@ -318,7 +317,7 @@ pthread_getspecific(pthread_key_t key)
         return nullptr;
 
 #ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
-    auto threadSpecificData = (void **)__read_msr(0xC0000100);
+    auto threadSpecificData = (void **)__tls_base();
 #endif
 
     return threadSpecificData[key];
@@ -620,7 +619,7 @@ pthread_setspecific(pthread_key_t key, const void *data)
         return -EINVAL;
 
 #ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
-    auto threadSpecificData = (void **)__read_msr(0xC0000100);
+    auto threadSpecificData = (void **)__tls_base();
 #endif
 
     threadSpecificData[key] = (void *)data;
