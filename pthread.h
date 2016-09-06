@@ -29,15 +29,15 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 
-typedef volatile int64_t pthread_attr_t;
-typedef volatile int64_t pthread_cond_t;
-typedef volatile int64_t pthread_condattr_t;
-typedef volatile int64_t pthread_key_t;
-typedef volatile int64_t pthread_mutex_t;
-typedef volatile int64_t pthread_mutexattr_t;
-typedef volatile int64_t pthread_once_t;
-typedef volatile int64_t pthread_rwlock_t;
-typedef volatile int64_t pthread_rwlockattr_t;
+typedef int64_t pthread_attr_t;
+typedef int64_t pthread_cond_t;
+typedef int64_t pthread_condattr_t;
+typedef int64_t pthread_key_t;
+typedef int64_t pthread_mutex_t;
+typedef int64_t pthread_mutexattr_t;
+typedef int64_t pthread_once_t;
+typedef int64_t pthread_rwlock_t;
+typedef int64_t pthread_rwlockattr_t;
 typedef int64_t pthread_t;
 
 #define PTHREAD_CANCEL_ASYNCHRONOUS 0
