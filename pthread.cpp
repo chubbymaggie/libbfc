@@ -336,10 +336,10 @@ pthread_join(pthread_t, void **)
 extern "C" int
 pthread_key_create(pthread_key_t *key, void (*destructor)(void *))
 {
-    if (destructor != nullptr)
+    if (destructor)
         ARG_UNSUPPORTED("destructor");
 
-    if (key == nullptr)
+    if (!key)
         return -EINVAL;
 
     static uint64_t g_keys = 0;
@@ -372,10 +372,10 @@ pthread_mutex_getprioceiling(const pthread_mutex_t *, int *)
 extern "C" int
 pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr)
 {
-    if (attr != nullptr)
+    if (attr)
         ARG_UNSUPPORTED("destructor");
 
-    if (mutex == nullptr)
+    if (!mutex)
         return -EINVAL;
 
     *mutex = 0;
@@ -385,7 +385,7 @@ pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr)
 extern "C" int
 pthread_mutex_lock(pthread_mutex_t *mutex)
 {
-    if (mutex == nullptr)
+    if (!mutex)
         return -EINVAL;
 
     while(__sync_lock_test_and_set(mutex, 1));
@@ -410,7 +410,7 @@ pthread_mutex_trylock(pthread_mutex_t *)
 extern "C" int
 pthread_mutex_unlock(pthread_mutex_t *mutex)
 {
-    if (mutex == nullptr)
+    if (!mutex)
         return -EINVAL;
 
     __sync_lock_release(mutex);
@@ -491,7 +491,7 @@ pthread_mutexattr_settype(pthread_mutexattr_t *, int)
 extern "C" int
 pthread_once(pthread_once_t *once, void (*init)(void))
 {
-    if (once == nullptr || init == nullptr)
+    if (!once || !init)
         return -EINVAL;
 
     if (*once == 0)
