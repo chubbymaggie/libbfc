@@ -55,8 +55,6 @@ extern "C" uint64_t thread_context_tlsptr(void);
 void* threadSpecificData[MAX_THREAD_SPECIFIC_DATA] = {0};
 #endif
 
-static uint64_t g_keys = 0;
-
 extern "C" int
 pthread_attr_destroy(pthread_attr_t *)
 {
@@ -336,13 +334,15 @@ pthread_join(pthread_t, void **)
 extern "C" int
 pthread_key_create(pthread_key_t *key, void (*destructor)(void *))
 {
+    static uint64_t g_keys = 0;
+
     if (destructor)
         ARG_UNSUPPORTED("destructor");
 
     if (!key)
         return -EINVAL;
 
-    *key = __sync_fetch_and_add(&g_key, 1);
+    *key = __sync_fetch_and_add(&g_keys, 1);
 
     return 0;
 }
