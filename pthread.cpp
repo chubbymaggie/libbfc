@@ -26,12 +26,10 @@
 #include <string.h>
 #include <stdint.h>
 
-// We allocate a page for FS BASE which is used for TLS. We need to 
-// store the FS BASE as the first element, so this means that the 
-// max number of elements that can be used for TLS is 511. 
-#define MAX_THREAD_SPECIFIC_DATA 511
+#define MAX_THREAD_SPECIFIC_DATA 512
 
-extern "C" uint64_t __tls_base(void) noexcept;
+extern "C" uint64_t thread_context_cpuid(void);
+extern "C" uint64_t thread_context_tlsptr(void);
 
 #define UNHANDLED() \
     { \
@@ -53,7 +51,7 @@ extern "C" uint64_t __tls_base(void) noexcept;
         write(0, str_endl, strlen(str_endl)); \
     }
 
-#ifndef USE_FS_FOR_THREAD_LOCAL_STORAGE
+#ifndef LOOKUP_TLS_DATA
 void* threadSpecificData[MAX_THREAD_SPECIFIC_DATA] = {0};
 #endif
 
@@ -319,8 +317,8 @@ pthread_getspecific(pthread_key_t key)
     if (key > MAX_THREAD_SPECIFIC_DATA)
         return nullptr;
 
-#ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
-    auto threadSpecificData = (void **)__tls_base();
+#ifdef LOOKUP_TLS_DATA
+    auto threadSpecificData = (void **)thread_context_tlsptr();
 #endif
 
     return threadSpecificData[key];
@@ -336,14 +334,15 @@ pthread_join(pthread_t, void **)
 extern "C" int
 pthread_key_create(pthread_key_t *key, void (*destructor)(void *))
 {
+    static uint64_t g_keys = 0;
+
     if (destructor)
         ARG_UNSUPPORTED("destructor");
 
     if (!key)
         return -EINVAL;
 
-    static uint64_t g_keys = 0;
-    *key = g_keys++;
+    *key = __sync_fetch_and_add(&g_key, 1);
 
     return 0;
 }
@@ -494,11 +493,8 @@ pthread_once(pthread_once_t *once, void (*init)(void))
     if (!once || !init)
         return -EINVAL;
 
-    if (*once == 0)
-    {
+    if (__sync_fetch_and_add(once, 1) == 0)
         (*init)();
-        *once = 1;
-    }
 
     return 0;
 }
@@ -621,8 +617,8 @@ pthread_setspecific(pthread_key_t key, const void *data)
     if (key > MAX_THREAD_SPECIFIC_DATA)
         return -EINVAL;
 
-#ifdef USE_FS_FOR_THREAD_LOCAL_STORAGE
-    auto threadSpecificData = (void **)__tls_base();
+#ifdef LOOKUP_TLS_DATA
+    auto threadSpecificData = (void **)thread_context_tlsptr();
 #endif
 
     threadSpecificData[key] = (void *)data;
