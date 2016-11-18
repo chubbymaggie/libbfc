@@ -201,10 +201,14 @@ pthread_cleanup_pop(int)
 }
 
 extern "C" int
-pthread_cond_broadcast(pthread_cond_t *)
+pthread_cond_broadcast(pthread_cond_t *cond)
 {
-    UNHANDLED();
-    return -ENOSYS;
+    if (!cond)
+        return -EINVAL;
+
+    __sync_lock_release(cond);
+    
+    return 0;
 }
 
 extern "C" int
@@ -215,10 +219,16 @@ pthread_cond_destroy(pthread_cond_t *)
 }
 
 extern "C" int
-pthread_cond_init(pthread_cond_t *, const pthread_condattr_t *)
+pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr)
 {
-    UNHANDLED();
-    return -ENOSYS;
+    if (attr)
+        ARG_UNSUPPORTED("attr");
+
+    if (!cond)
+        return -EINVAL;
+
+    *cond = 0;
+    return 0;
 }
 
 extern "C" int
@@ -236,10 +246,18 @@ pthread_cond_timedwait(pthread_cond_t *, pthread_mutex_t *, const struct timespe
 }
 
 extern "C" int
-pthread_cond_wait(pthread_cond_t *, pthread_mutex_t *)
+pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
 {
-    UNHANDLED();
-    return -ENOSYS;
+    if (!cond || !mutex)
+        return -EINVAL;
+
+    *cond = 1;
+    
+    pthread_mutex_unlock(mutex);
+    while(__sync_lock_test_and_set(cond, 1)) { while(*cond) };
+    pthread_mutex_lock(mutex);
+    
+    return 0;
 }
 
 extern "C" int
@@ -372,13 +390,13 @@ extern "C" int
 pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr)
 {
     if (attr)
-        ARG_UNSUPPORTED("destructor");
+        ARG_UNSUPPORTED("attr");
 
     if (!mutex)
         return -EINVAL;
 
     *mutex = 0;
-    return -ENOSYS;
+    return 0;
 }
 
 extern "C" int
@@ -387,7 +405,7 @@ pthread_mutex_lock(pthread_mutex_t *mutex)
     if (!mutex)
         return -EINVAL;
 
-    while(__sync_lock_test_and_set(mutex, 1));
+    while(__sync_lock_test_and_set(mutex, 1)) { while(*mutex) };
 
     return 0;
 }
